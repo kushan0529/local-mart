@@ -8,12 +8,15 @@ const useGeolocation = () => {
   const [loading, setLoading] = useState(!location);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const getPosition = () => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser');
       setLoading(false);
       return;
     }
+
+    setLoading(true);
+    setError(null);
 
     const handleSuccess = (position) => {
       const newLocation = {
@@ -25,10 +28,10 @@ const useGeolocation = () => {
       setLoading(false);
     };
 
-    const handleError = (error) => {
-      setError(error.message);
+    const handleError = (err) => {
+      setError(err.message);
       setLoading(false);
-      // Fallback to a default location if needed (e.g., city center)
+      // Only set default if we have NO location at all
       if (!location) {
         const defaultLoc = { lat: 12.9716, lng: 77.5946 }; // Example: Bangalore
         setLocation(defaultLoc);
@@ -38,12 +41,16 @@ const useGeolocation = () => {
 
     navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
       enableHighAccuracy: true,
-      timeout: 5000,
+      timeout: 10000,
       maximumAge: 0,
     });
+  };
+
+  useEffect(() => {
+    getPosition();
   }, []);
 
-  return { location, loading, error };
+  return { location, loading, error, refresh: getPosition };
 };
 
 export default useGeolocation;
