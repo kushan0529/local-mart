@@ -13,7 +13,7 @@ import {
 
 const Home = () => {
   const { user } = useAuth();
-  const { location, error: geoError } = useGeolocation();
+  const { location, error: geoError, refresh: refreshGeo, loading: geoLoading } = useGeolocation();
   const [nearbyShops, setNearbyShops] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -42,9 +42,15 @@ const Home = () => {
           console.warn('Could not fetch categories:', catErr);
         }
 
-        if (location && location.latitude && location.longitude) {
-          const shopRes = await API.get(`/shops/nearby?lat=${location.latitude}&lng=${location.longitude}&radius=20`);
-          setNearbyShops(shopRes.data.data || []);
+        if (location && location.lat && location.lng) {
+          const shopRes = await API.get(`/shops/nearby?lat=${location.lat}&lng=${location.lng}&radius=500`);
+          if (shopRes.data.data.length > 0) {
+            setNearbyShops(shopRes.data.data);
+          } else {
+            // Fallback to all approved shops if none nearby
+            const allShopsRes = await API.get('/shops');
+            setNearbyShops(allShopsRes.data.data || []);
+          }
         }
       } catch (err) {
         console.error('Error fetching home data:', err);
@@ -163,7 +169,15 @@ const Home = () => {
             </div>
             <div>
               <h2 className="text-4xl font-black text-gray-900">Nearby Shops</h2>
-              <p className="text-gray-500 mt-1 font-medium">Direct from your community</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-gray-500 font-medium">Direct from your community</p>
+                <button 
+                  onClick={refreshGeo}
+                  className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded-lg hover:bg-primary-100 transition-colors"
+                >
+                  {geoLoading ? 'Updating...' : 'Update Location'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -204,18 +218,25 @@ const Home = () => {
             <MapPin className="w-20 h-20 text-gray-200 mx-auto mb-6" />
             <h3 className="text-3xl font-black text-gray-900">{geoError ? 'Location Access Denied' : 'Searching for shops...'}</h3>
             <p className="text-gray-400 mt-4 text-lg font-medium mb-8">{geoError ? 'Please enable location to see nearby stores.' : 'We are looking for shops in your neighborhood.'}</p>
-            <button 
-              onClick={() => {
-                // Hardcode Bangalore coordinates for demo purposes
-                const demoLocation = { latitude: 12.9716, longitude: 77.5946 };
-                API.get(`/shops/nearby?lat=${demoLocation.latitude}&lng=${demoLocation.longitude}&radius=50`)
-                  .then(res => setNearbyShops(res.data.data || []))
-                  .catch(err => console.error(err));
-              }}
-              className="px-8 py-4 bg-primary-600 text-white rounded-2xl font-bold shadow-xl shadow-primary-600/20 hover:bg-primary-700 transition-all active:scale-95"
-            >
-              Use Demo Location (Bangalore)
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button 
+                onClick={refreshGeo}
+                className="px-8 py-4 bg-primary-600 text-white rounded-2xl font-bold shadow-xl shadow-primary-600/20 hover:bg-primary-700 transition-all active:scale-95 flex items-center gap-2"
+              >
+                <MapPin className="w-5 h-5" /> {geoLoading ? 'Accessing GPS...' : 'Enable Real GPS'}
+              </button>
+              <button 
+                onClick={() => {
+                  const demoLocation = { lat: 12.9716, lng: 77.5946 };
+                  API.get(`/shops/nearby?lat=${demoLocation.lat}&lng=${demoLocation.lng}&radius=50`)
+                    .then(res => setNearbyShops(res.data.data || []))
+                    .catch(err => console.error(err));
+                }}
+                className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-all active:scale-95"
+              >
+                Use Demo Location (Bangalore)
+              </button>
+            </div>
           </div>
         )}
       </section>
