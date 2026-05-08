@@ -5,9 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import useGeolocation from '../hooks/useGeolocation';
 import ProductCard from '../components/ProductCard';
 import Loader from '../components/Loader';
-import { 
-  MapPin, Search, ShoppingBag, ArrowRight, Star, 
-  PlusSquare, Smartphone, Coffee, Dog, Home as HomeIcon, 
+import {
+  MapPin, Search, ShoppingBag, ArrowRight, Star,
+  PlusSquare, Smartphone, Coffee, Dog, Home as HomeIcon,
   Utensils, Milk, PenTool, Wrench, Heart, Zap, Gift, Tag
 } from 'lucide-react';
 
@@ -99,10 +99,10 @@ const Home = () => {
       {/* Hero Section */}
       <section className="relative h-[80vh] flex items-center overflow-hidden bg-gray-900">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80" 
-            className="w-full h-full object-cover opacity-40 scale-105" 
-            alt="Hero Background" 
+          <img
+            src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+            className="w-full h-full object-cover opacity-40 scale-105"
+            alt="Hero Background"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/60 to-transparent"></div>
         </div>
@@ -124,9 +124,9 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-grow relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-primary-500 transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder="Search for groceries, essentials, or shops..." 
+                <input
+                  type="text"
+                  placeholder="Search for groceries, essentials, or shops..."
                   className="w-full pl-12 pr-4 py-5 bg-white rounded-2xl text-gray-900 font-medium shadow-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/20 transition-all"
                 />
               </div>
@@ -171,7 +171,7 @@ const Home = () => {
               <h2 className="text-4xl font-black text-gray-900">Nearby Shops</h2>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-gray-500 font-medium">Direct from your community</p>
-                <button 
+                <button
                   onClick={refreshGeo}
                   className="text-[10px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded-lg hover:bg-primary-100 transition-colors"
                 >
@@ -181,7 +181,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-        
+
         {location && nearbyShops.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {nearbyShops.map((shop) => (
@@ -219,13 +219,13 @@ const Home = () => {
             <h3 className="text-3xl font-black text-gray-900">{geoError ? 'Location Access Denied' : 'Searching for shops...'}</h3>
             <p className="text-gray-400 mt-4 text-lg font-medium mb-8">{geoError ? 'Please enable location to see nearby stores.' : 'We are looking for shops in your neighborhood.'}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button 
+              <button
                 onClick={refreshGeo}
                 className="px-8 py-4 bg-primary-600 text-white rounded-2xl font-bold shadow-xl shadow-primary-600/20 hover:bg-primary-700 transition-all active:scale-95 flex items-center gap-2"
               >
                 <MapPin className="w-5 h-5" /> {geoLoading ? 'Accessing GPS...' : 'Enable Real GPS'}
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const demoLocation = { lat: 12.9716, lng: 77.5946 };
                   API.get(`/shops/nearby?lat=${demoLocation.lat}&lng=${demoLocation.lng}&radius=50`)
