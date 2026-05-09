@@ -17,6 +17,7 @@ import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import { importData } from './seeder.js';
 
 dotenv.config();
 
@@ -60,6 +61,16 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+
+// TEMPORARY SEED ROUTE (Remove after seeding)
+app.get('/api/seed-database', async (req, res) => {
+  try {
+    const result = await importData();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 // Error Handling
 app.use(notFound);

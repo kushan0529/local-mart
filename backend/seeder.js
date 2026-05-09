@@ -240,7 +240,7 @@ const products = [
   }
 ];
 
-const importData = async () => {
+export const importData = async () => {
   try {
     await User.deleteMany();
     await Shop.deleteMany();
@@ -290,11 +290,14 @@ const importData = async () => {
     await Order.create(sampleOrder);
 
     console.log('Data Imported Successfully with 30+ products and multiple photos!');
-    process.exit();
+    return { success: true, message: 'Data Imported Successfully' };
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    process.exit(1);
+    throw error;
   }
 };
 
-importData();
+// Only run if called directly from command line
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  importData().then(() => process.exit()).catch(() => process.exit(1));
+}
