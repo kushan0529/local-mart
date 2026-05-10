@@ -33,7 +33,7 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const productRes = await API.get('/products?limit=16');
-        setTrendingProducts(productRes.data.data || []);
+        setTrendingProducts(productRes.data.docs || productRes.data.data || []);
 
         try {
           const catRes = await API.get('/shops/categories');
