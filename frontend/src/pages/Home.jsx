@@ -42,16 +42,23 @@ const Home = () => {
           console.warn('Could not fetch categories:', catErr);
         }
 
+        // Try to get nearby shops if location is available
+        let shops = [];
         if (location && location.lat && location.lng) {
-          const shopRes = await API.get(`/shops/nearby?lat=${location.lat}&lng=${location.lng}&radius=500`);
-          if (shopRes.data.data.length > 0) {
-            setNearbyShops(shopRes.data.data);
-          } else {
-            // Fallback to all approved shops if none nearby
-            const allShopsRes = await API.get('/shops');
-            setNearbyShops(allShopsRes.data.data || []);
+          try {
+            const shopRes = await API.get(`/shops/nearby?lat=${location.lat}&lng=${location.lng}&radius=500`);
+            shops = shopRes.data.data || [];
+          } catch (err) {
+            console.warn('Nearby shops fetch failed:', err);
           }
         }
+
+        // Fallback: If no location or no nearby shops found, show ALL approved shops
+        if (shops.length === 0) {
+          const allShopsRes = await API.get('/shops');
+          shops = allShopsRes.data.data || [];
+        }
+        setNearbyShops(shops);
       } catch (err) {
         console.error('Error fetching home data:', err);
       } finally {
