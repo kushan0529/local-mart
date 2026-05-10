@@ -13,13 +13,14 @@ const RegisterOwner = () => {
     confirmPassword: '',
     phone: '',
     shopName: '',
-    shopCategory: '',
+    shopCategory: 'others',
     street: '',
     city: '',
     state: '',
     pincode: '',
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [categories, setCategories] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingCats, setLoadingCats] = useState(true);
@@ -143,10 +144,10 @@ const RegisterOwner = () => {
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Shop Category</label>
                   <div className="relative">
                     <select name="shopCategory" required value={formData.shopCategory} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary-500 transition-all font-bold appearance-none">
-                      <option value="">{loadingCats ? 'Loading...' : 'Select Category'}</option>
-                      {categories.map(cat => (
+                      <option value="">{loadingCats ? 'Loading...' : categories.map(cat => (
                         <option key={cat._id} value={cat._id}>{cat.name}</option>
-                      ))}
+                      ))}</option>
+
                     </select>
                     <Layers className="absolute right-4 top-3.5 text-gray-400 w-5 h-5 pointer-events-none" />
                   </div>
