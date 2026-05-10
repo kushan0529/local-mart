@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import User from './models/User.js';
 import Shop from './models/Shop.js';
@@ -7,9 +8,6 @@ import Category from './models/Category.js';
 import Order from './models/Order.js';
 import Review from './models/Review.js';
 import connectDB from './config/db.js';
-
-dotenv.config();
-connectDB();
 
 const users = [
   { name: 'Admin User', email: 'admin@example.com', password: 'password123', role: 'admin', phone: '1234567890' },
@@ -299,5 +297,6 @@ export const importData = async () => {
 
 // Only run if called directly from command line
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  importData().then(() => process.exit()).catch(() => process.exit(1));
+  dotenv.config();
+  connectDB().then(() => importData()).then(() => process.exit()).catch(() => process.exit(1));
 }
