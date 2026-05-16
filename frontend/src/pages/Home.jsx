@@ -29,10 +29,32 @@ const Home = () => {
     }
   }, [user, navigate]);
 
+  const [activeLocation, setActiveLocation] = useState(null);
+
+  // Sync hook location to activeLocation
+  useEffect(() => {
+    if (location) {
+      setActiveLocation(location);
+    }
+  }, [location]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const productRes = await API.get('/products?limit=16');
+        setLoading(true);
+        
+        // Fetch products - try nearby if location exists, otherwise global
+        let productRes;
+        if (activeLocation?.lat && activeLocation?.lng) {
+          try {
+            productRes = await API.get(`/products/nearby?lat=${activeLocation.lat}&lng=${activeLocation.lng}&radius=50&limit=16`);
+          } catch (pErr) {
+            console.warn('Nearby products fetch failed, falling back to global:', pErr);
+            productRes = await API.get('/products?limit=16');
+          }
+        } else {
+          productRes = await API.get('/products?limit=16');
+        }
         setTrendingProducts(productRes.data.docs || productRes.data.data || []);
 
         try {
@@ -44,9 +66,9 @@ const Home = () => {
 
         // Try to get nearby shops if location is available
         let shops = [];
-        if (location && location.lat && location.lng) {
+        if (activeLocation && activeLocation.lat && activeLocation.lng) {
           try {
-            const shopRes = await API.get(`/shops/nearby?lat=${location.lat}&lng=${location.lng}&radius=500`);
+            const shopRes = await API.get(`/shops/nearby?lat=${activeLocation.lat}&lng=${activeLocation.lng}&radius=500`);
             shops = shopRes.data.data || [];
           } catch (err) {
             console.warn('Nearby shops fetch failed:', err);
@@ -66,7 +88,7 @@ const Home = () => {
       }
     };
     fetchData();
-  }, [location]);
+  }, [activeLocation]);
 
   // Dynamic icon mapping
   const iconMap = {
@@ -99,7 +121,7 @@ const Home = () => {
     return iconMap[cat.icon] || iconMap[cat.name] || <Tag className="w-8 h-8" />;
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader /></div>;
+  if (loading && !activeLocation) return <div className="min-h-screen flex items-center justify-center"><Loader /></div>;
 
   return (
     <div className="space-y-16 pb-20">
@@ -189,7 +211,7 @@ const Home = () => {
           </div>
         </div>
 
-        {location && nearbyShops.length > 0 ? (
+        {activeLocation && nearbyShops.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {nearbyShops.map((shop) => (
               <Link key={shop._id} to={`/shops/${shop._id}`} className="group bg-white rounded-[2.5rem] overflow-hidden border border-gray-50 shadow-xl shadow-gray-200/40 hover:shadow-2xl hover:shadow-primary-100 transition-all">
@@ -235,9 +257,7 @@ const Home = () => {
               <button
                 onClick={() => {
                   const demoLocation = { lat: 12.9716, lng: 77.5946 };
-                  API.get(`/shops/nearby?lat=${demoLocation.lat}&lng=${demoLocation.lng}&radius=50`)
-                    .then(res => setNearbyShops(res.data.data || []))
-                    .catch(err => console.error(err));
+                  setActiveLocation(demoLocation);
                 }}
                 className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition-all active:scale-95"
               >
@@ -252,16 +272,28 @@ const Home = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-12">
           <div>
-            <h2 className="text-4xl font-black text-gray-900">Trending Now</h2>
-            <p className="text-gray-500 mt-2 font-medium">Top picks from local stores</p>
+            <h2 className="text-4xl font-black text-gray-900">
+              {activeLocation ? 'Nearby Products' : 'Trending Now'}
+            </h2>
+            <p className="text-gray-500 mt-2 font-medium">
+              {activeLocation ? 'Top picks in your neighborhood' : 'Top picks from local stores'}
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {trendingProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
+          {trendingProducts.length > 0 ? (
+            trendingProducts.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+              <ShoppingBag className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+              <p className="text-gray-400 font-bold">No products found in this area yet.</p>
+            </div>
+          )}
         </div>
       </section>
+
     </div>
   );
 };
